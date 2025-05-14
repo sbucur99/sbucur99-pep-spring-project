@@ -2,8 +2,11 @@ package com.example.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -36,22 +39,65 @@ public class SocialMediaController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Account> registerAccount(@RequestBody Account account) throws SQLException{
-        
-        return null;
-    }
-
-    @PostMapping("/login")
-    public ResponseEntity<Account> login(@RequestBody Account account) throws SQLException{
-        return null;
-    }
-
-    @PostMapping("/messages")
-    public ResponseEntity<Message> postMessage(@RequestBody Message message) throws SQLException{
-        Message newMessage = messageService.createMessage(message);
-        if (newMessage != null){
-            return ResponseEntity
+    public ResponseEntity<Account> postRegisterAccountHandler(@RequestBody Account account) throws SQLException{
+        Account newAccount = accountService.registerAccount(account);
+        if (newAccount != null){
+            return ResponseEntity.status(200).body(account);
+        } else {
+            return ResponseEntity.status(400).body(null);
         }
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<Account> postLoginAccountHandler(@RequestBody Account account) throws SQLException{
+        Account loggedAccount = accountService.loginAccount(account);
+        if (loggedAccount != null){
+            return ResponseEntity.status(200).body(account);
+        } else {
+            return ResponseEntity.status(401).body(null);
+        }
+    }
+
+    @DeleteMapping("/messages/{message_id}")
+    public ResponseEntity<Message> postMessageHandler(@RequestBody Message message) throws SQLException{
+        if (message.getMessageText() == null || message.getMessageText().isEmpty() || message.getMessageText().length() > 255){
+            return ResponseEntity.status(400).body(null);
+        }
+        Message newMessage = messageService.createMessage(message);
+        if (newMessage != null){
+            return ResponseEntity.status(200).body(newMessage);
+        } else {
+            return ResponseEntity.status(400).body(null);
+        }
+    }
+
+    @PutMapping("/messages/{message_id}")
+    public ResponseEntity<Message> updateMessageHandler(@PathVariable int message_id, @RequestBody Message message) throws SQLException{
+        Message newMessage = messageService.updateMessage(message, message_id);
+        if (newMessage != null){
+            return ResponseEntity.status(200).body(newMessage);
+        } else {
+            return ResponseEntity.status(400).body(null);
+        }
+    }
+
+    @GetMapping("/messages")
+    public ResponseEntity<List<Message>> getAllMessagesHandler() throws SQLException{
+        List<Message> messages = messageService.getAllMessages();
+        return ResponseEntity.status(200).body(messages);
+    }
+
+    @GetMapping("/messages/{message_id}")
+    public ResponseEntity<Message> getOneMessageByMessageIdHandler(@PathVariable int message_id) throws SQLException{
+        Message message = messageService.getMessageById(message_id);
+        return ResponseEntity.status(200).body(message);
+        
+    }
+
+    @GetMapping("/accounts/{account_id}")
+    public ResponseEntity<List<Message>> getAllMessagesByUserIdHandler(@PathVariable int account_id) throws SQLException{
+        List<Message> messages = messageService.getAllMessagesByAccountId(account_id);
+        return ResponseEntity.status(200).body(messages);
+        
+    }
 }
