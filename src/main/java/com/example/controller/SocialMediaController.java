@@ -1,11 +1,22 @@
 package com.example.controller;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.service.AccountService;
+import com.example.service.MessageService;
+import com.example.entity.Account;
+import com.example.entity.Message;
+
+import java.sql.SQLException;
+import java.util.List;
+
+
 
 /**
  * TODO: You will need to write your own endpoints and handlers for your controller using Spring. The endpoints you will need can be
@@ -17,15 +28,30 @@ import com.example.service.AccountService;
 //@RequestMapping("/")
 public class SocialMediaController {
     private AccountService accountService;
+    private MessageService messageService;
 
-    public SocialMediaController(AccountService accountService){
+    public SocialMediaController(AccountService accountService, MessageService messageService){
         this.accountService = accountService;
+        this.messageService = messageService;
     }
 
-    //@GetMapping("/a")
-    //@RequestMapping("", method = RequestMapping.GET)
-    public @ResponseBody registerAccount(@RequestBody Account account){
+    @PostMapping("/register")
+    public ResponseEntity<Account> registerAccount(@RequestBody Account account) throws SQLException{
         
+        return null;
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<Account> login(@RequestBody Account account) throws SQLException{
+        return null;
+    }
+
+    @PostMapping("/messages")
+    public ResponseEntity<Message> postMessage(@RequestBody Message message) throws SQLException{
+        Message newMessage = messageService.createMessage(message);
+        if (newMessage != null){
+            return ResponseEntity
+        }
     }
 
 }
