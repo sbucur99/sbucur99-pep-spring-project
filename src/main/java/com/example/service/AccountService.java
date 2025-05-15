@@ -21,27 +21,28 @@ public class AccountService {
     }
 
     /**
-     * 
+     * Registers a user account if it doesn't already exist and password is at least 4 characters
      * @param account
-     * @return
+     * @return an Account object wrapped inside an Optional or an empty Optional
      */
     public Account registerAccount(Account account){
         if (account.getUsername() == null || account.getUsername().isEmpty() || account.getPassword() == null || account.getPassword().length() < 4) {
             return null;
         }
-        Account persistedAccount = accountRepository.registerAccount(account);
+        Optional<Account> accountFind = accountRepository.findByUsername(account.getUsername());
+        if (accountFind.isPresent()) {
+            return null;
+        }
+        Account persistedAccount = accountRepository.save(account);
         return persistedAccount;
     }
 
     /**
-     * 
+     * Checks whether account exists with username and corresponding password
      * @param account
-     * @return
+     * @return an Account object wrapped inside an Optional or an empty Optional
      */
-    Optional<Account> loginAccount(Account account){
-        return accountRepository.findByUsernameAndPassword(account.getUsername());
+    public Optional<Account> loginAccount(Account account){
+        return accountRepository.findByUsernameAndPassword(account.getUsername(), account.getPassword());
     }
-    
-
-
 }

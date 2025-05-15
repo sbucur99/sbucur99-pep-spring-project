@@ -18,6 +18,4 @@ public interface MessageRepository extends JpaRepository<Message, Integer>{
      * @return a list of message objects
      */
     public List<Message> findAllByAccountId(int accountId);
-
-
 }

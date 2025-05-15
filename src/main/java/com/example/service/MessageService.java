@@ -31,7 +31,7 @@ public class MessageService {
      */
     public Message createMessage(Message message){
         if (message.getMessageText() == null || message.getMessageText().isBlank() || message.getMessageText().length() >= 255 
-        || (message.getMessageId() != null && messageRepository.existsById(message.getMessageId()))) {
+        || (message.getMessageId() != null && !messageRepository.existsById(message.getMessageId()))) {
             return null;
         }
         Message persistedMessage = messageRepository.save(message);

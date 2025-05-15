@@ -18,8 +18,7 @@ import com.example.entity.Message;
 
 import java.sql.SQLException;
 import java.util.List;
-
-
+import java.util.Optional;
 
 /**
  * TODO: You will need to write your own endpoints and handlers for your controller using Spring. The endpoints you will need can be
@@ -32,6 +31,11 @@ public class SocialMediaController {
     private AccountService accountService;
     private MessageService messageService;
 
+    /**
+     * Contructor for the account service and message service classes
+     * @param accountService
+     * @param messageService
+     */
     public SocialMediaController(AccountService accountService, MessageService messageService){
         this.accountService = accountService;
         this.messageService = messageService;
@@ -41,13 +45,12 @@ public class SocialMediaController {
      * Sends the account object without the id to the database for registration of a user
      * @param account
      * @return
-     * @throws SQLException
      */
     @PostMapping("/register")
-    public ResponseEntity<Account> postRegisterAccountHandler(@RequestBody Account account) throws SQLException{
+    public ResponseEntity<Account> postRegisterAccountHandler(@RequestBody Account account){
         Account newAccount = accountService.registerAccount(account);
         if (newAccount != null){
-            return ResponseEntity.status(200).body(account);
+            return ResponseEntity.status(200).body(newAccount);
         } else {
             return ResponseEntity.status(400).body(null);
         }
@@ -57,21 +60,25 @@ public class SocialMediaController {
      * Sends the account object without the id to login the user
      * @param account
      * @return
-     * @throws SQLException
      */
     @PostMapping("/login")
-    public ResponseEntity<Account> postLoginAccountHandler(@RequestBody Account account) throws SQLException{
-        Account loggedAccount = accountService.loginAccount(account);
-        if (loggedAccount != null){
+    public ResponseEntity<Account> postLoginAccountHandler(@RequestBody Account account){
+        Optional<Account> loggedAccount = accountService.loginAccount(account);
+        if (!loggedAccount.isEmpty()){
             return ResponseEntity.status(200).body(account);
         } else {
             return ResponseEntity.status(401).body(null);
         }
     }
 
+    /**
+     * 
+     * @param message
+     * @return
+     */
     @DeleteMapping("/messages/{message_id}")
-    public ResponseEntity<Message> postMessageHandler(@RequestBody Message message) throws SQLException{
-        Message newMessage = messageService.createMessage(message);
+    public ResponseEntity<Message> postMessageHandler(@RequestBody Message message){
+        Message newMessage = messageService.deleteMessageById(message.getMessageId());
         if (newMessage != null){
             return ResponseEntity.status(200).body(newMessage);
         } else {
@@ -79,9 +86,15 @@ public class SocialMediaController {
         }
     }
 
+    /**
+     * 
+     * @param message_id
+     * @param message
+     * @return
+     */
     @PutMapping("/messages/{message_id}")
-    public ResponseEntity<Message> updateMessageByIdHandler(@PathVariable int message_id, @RequestBody Message message) throws SQLException{
-        Message newMessage = messageService.updateMessage(message, message_id);
+    public ResponseEntity<Message> updateMessageByIdHandler(@PathVariable int message_id, @RequestBody Message message){
+        Message newMessage = messageService.updateMessageById(message, message_id);
         if (newMessage != null){
             return ResponseEntity.status(200).body(newMessage);
         } else {
@@ -89,21 +102,35 @@ public class SocialMediaController {
         }
     }
 
+    /**
+     * 
+     * @return
+     */
     @GetMapping("/messages")
-    public ResponseEntity<List<Message>> getAllMessagesHandler() throws SQLException{
+    public ResponseEntity<List<Message>> getAllMessagesHandler(){
         List<Message> messages = messageService.getAllMessages();
         return ResponseEntity.status(200).body(messages);
     }
 
+    /**
+     * 
+     * @param message_id
+     * @return
+     */
     @GetMapping("/messages/{message_id}")
-    public ResponseEntity<Message> getOneMessageByMessageIdHandler(@PathVariable int message_id) throws SQLException{
+    public ResponseEntity<Message> getOneMessageByMessageIdHandler(@PathVariable int message_id){
         Message message = messageService.getMessageById(message_id);
         return ResponseEntity.status(200).body(message);
         
     }
 
+    /**
+     * 
+     * @param account_id
+     * @return
+     */
     @GetMapping("/accounts/{account_id}")
-    public ResponseEntity<List<Message>> getAllMessagesByUserIdHandler(@PathVariable int account_id) throws SQLException{
+    public ResponseEntity<List<Message>> getAllMessagesByUserIdHandler(@PathVariable int account_id){
         List<Message> messages = messageService.getAllMessagesByAccountId(account_id);
         return ResponseEntity.status(200).body(messages);
         
