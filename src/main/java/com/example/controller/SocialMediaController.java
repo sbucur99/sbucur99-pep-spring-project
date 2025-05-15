@@ -1,5 +1,6 @@
 package com.example.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,8 +16,8 @@ import com.example.service.AccountService;
 import com.example.service.MessageService;
 import com.example.entity.Account;
 import com.example.entity.Message;
+import com.example.exception.DuplicateUsernameException;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,6 +37,7 @@ public class SocialMediaController {
      * @param accountService
      * @param messageService
      */
+    @Autowired
     public SocialMediaController(AccountService accountService, MessageService messageService){
         this.accountService = accountService;
         this.messageService = messageService;
@@ -48,11 +50,15 @@ public class SocialMediaController {
      */
     @PostMapping("/register")
     public ResponseEntity<Account> postRegisterAccountHandler(@RequestBody Account account){
-        Account newAccount = accountService.registerAccount(account);
-        if (newAccount != null){
-            return ResponseEntity.status(200).body(newAccount);
-        } else {
-            return ResponseEntity.status(400).body(null);
+        try {
+            Account newAccount = accountService.registerAccount(account);
+            if (newAccount != null){
+                return ResponseEntity.status(200).body(newAccount);
+            } else {
+                return ResponseEntity.status(400).body(null);
+            }
+        } catch (DuplicateUsernameException e) {
+            return ResponseEntity.status(409).body(null);
         }
     }
 
@@ -72,12 +78,27 @@ public class SocialMediaController {
     }
 
     /**
-     * 
+     * Sends the message object to create a message
+     * @param message
+     * @return
+     */
+    @PostMapping("/messages")
+    public ResponseEntity<Message> createMesssageHandler(@RequestBody Message message){
+        Message createdMessage = messageService.createMessage(message);
+        if (createdMessage != null){
+            return ResponseEntity.status(200).body(createdMessage);
+        } else {
+            return ResponseEntity.status(400).body(null);
+        }
+    }
+
+    /**
+     * Sends the message object to create a message
      * @param message
      * @return
      */
     @DeleteMapping("/messages/{message_id}")
-    public ResponseEntity<Message> postMessageHandler(@RequestBody Message message){
+    public ResponseEntity<Message> deleteMessageByIdHandler(@RequestBody Message message){
         Message newMessage = messageService.deleteMessageById(message.getMessageId());
         if (newMessage != null){
             return ResponseEntity.status(200).body(newMessage);
@@ -87,7 +108,7 @@ public class SocialMediaController {
     }
 
     /**
-     * 
+     * Sends message id from parameter and the message object to update the message
      * @param message_id
      * @param message
      * @return
@@ -103,7 +124,7 @@ public class SocialMediaController {
     }
 
     /**
-     * 
+     * Retrieves a list of all the messages
      * @return
      */
     @GetMapping("/messages")
@@ -113,7 +134,7 @@ public class SocialMediaController {
     }
 
     /**
-     * 
+     * Sends the message id from parameter to get the message
      * @param message_id
      * @return
      */
@@ -125,7 +146,7 @@ public class SocialMediaController {
     }
 
     /**
-     * 
+     * Sends account id from parameter to get a list of all messages with the account id
      * @param account_id
      * @return
      */
