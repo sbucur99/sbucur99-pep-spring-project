@@ -30,7 +30,7 @@ public class MessageService {
      * @return the Message created
      */
     public Message createMessage(Message message){
-        if (message.getMessageText() == null || message.getMessageText().isBlank() || message.getMessageText().length() >= 255 
+        if (message.getMessageText() == null || message.getMessageText().isBlank() || message.getMessageText().length() > 255 
         || (message.getMessageId() != null && !messageRepository.existsById(message.getMessageId()))) {
             return null;
         }
@@ -42,35 +42,33 @@ public class MessageService {
      * Updates a message by the message id if id exists, the message is not empty and within 255 characters
      * @param message
      * @param message_id
-     * @return an updated message or null
+     * @return the number of rows updated
      */
-    public Message updateMessageById(Message message, int message_id){
+    public int updateMessageById(Message message, int message_id){
         if (message.getMessageText() == null || message.getMessageText().isEmpty() || message.getMessageText().length() > 255){
-            return null;
+            return 0;
         }
         Optional<Message> messageFind = messageRepository.findById(message_id);
         if (messageFind.isEmpty()){
-            return null;
+            return 0;
         }
         Message updatedMessage = messageFind.get();
-
         updatedMessage.setMessageText(message.getMessageText());
-        return messageRepository.save(updatedMessage);
+        messageRepository.save(updatedMessage);
+        return 1;
     }
 
     /**
      * Deletes a message by the id
      * @param message_id
-     * @return a deleted message object or null
+     * @return the number of rows deleted
      */
-    public Message deleteMessageById(int message_id){
+    public int deleteMessageById(int message_id){
         Optional<Message> messageFind = messageRepository.findById(message_id);
         if (messageFind.isEmpty()){
-            return null;
+            return 0;
         }
-        Message message = messageFind.get();
-        messageRepository.deleteById(message_id);
-        return message;
+        return 1;
     }
 
     /**

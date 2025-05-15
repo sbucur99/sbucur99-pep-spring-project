@@ -1,10 +1,12 @@
 package com.example.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.oauth2.client.OAuth2ClientProperties.Registration;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -17,6 +19,7 @@ import com.example.service.MessageService;
 import com.example.entity.Account;
 import com.example.entity.Message;
 import com.example.exception.DuplicateUsernameException;
+import com.example.exception.RegistrationFailException;
 
 import java.util.List;
 import java.util.Optional;
@@ -46,26 +49,24 @@ public class SocialMediaController {
     /**
      * Sends the account object without the id to the database for registration of a user
      * @param account
-     * @return
+     * @return the registered user or null
      */
     @PostMapping("/register")
     public ResponseEntity<Account> postRegisterAccountHandler(@RequestBody Account account){
         try {
-            Account newAccount = accountService.registerAccount(account);
-            if (newAccount != null){
-                return ResponseEntity.status(200).body(newAccount);
-            } else {
-                return ResponseEntity.status(400).body(null);
-            }
+            Account newAccount = accountService.registerAccount(account); //null check?
+            return ResponseEntity.status(200).body(newAccount);
+        } catch (RegistrationFailException e) {
+            return ResponseEntity.status(400).body(null);
         } catch (DuplicateUsernameException e) {
             return ResponseEntity.status(409).body(null);
-        }
+        } 
     }
 
     /**
      * Sends the account object without the id to login the user
      * @param account
-     * @return
+     * @return the logged in account or null
      */
     @PostMapping("/login")
     public ResponseEntity<Account> postLoginAccountHandler(@RequestBody Account account){
@@ -80,7 +81,7 @@ public class SocialMediaController {
     /**
      * Sends the message object to create a message
      * @param message
-     * @return
+     * @return the created message or null
      */
     @PostMapping("/messages")
     public ResponseEntity<Message> createMesssageHandler(@RequestBody Message message){
@@ -93,39 +94,35 @@ public class SocialMediaController {
     }
 
     /**
-     * Sends the message object to create a message
+     * Sends the message object to delete a message
      * @param message
-     * @return
+     * @return number of rows deleted (0 or 1)
      */
     @DeleteMapping("/messages/{message_id}")
-    public ResponseEntity<Message> deleteMessageByIdHandler(@RequestBody Message message){
-        Message newMessage = messageService.deleteMessageById(message.getMessageId());
-        if (newMessage != null){
-            return ResponseEntity.status(200).body(newMessage);
-        } else {
-            return ResponseEntity.status(400).body(null);
-        }
+    public ResponseEntity<Integer> deleteMessageByIdHandler(@RequestBody Message message){
+        int rowsDeleted = messageService.deleteMessageById(message.getMessageId());
+        return ResponseEntity.status(200).body(rowsDeleted);
     }
 
     /**
      * Sends message id from parameter and the message object to update the message
      * @param message_id
      * @param message
-     * @return
+     * @return the updated message or null
      */
-    @PutMapping("/messages/{message_id}")
-    public ResponseEntity<Message> updateMessageByIdHandler(@PathVariable int message_id, @RequestBody Message message){
-        Message newMessage = messageService.updateMessageById(message, message_id);
-        if (newMessage != null){
-            return ResponseEntity.status(200).body(newMessage);
-        } else {
+    @PatchMapping("/messages/{message_id}")
+    public ResponseEntity<Integer> updateMessageByIdHandler(@PathVariable int message_id, @RequestBody Message message){
+        int rowsUpdated = messageService.updateMessageById(message, message_id);
+        if (rowsUpdated == 0){
             return ResponseEntity.status(400).body(null);
+        } else {
+            return ResponseEntity.status(200).body(rowsUpdated);
         }
     }
 
     /**
      * Retrieves a list of all the messages
-     * @return
+     * @return a list of message objects
      */
     @GetMapping("/messages")
     public ResponseEntity<List<Message>> getAllMessagesHandler(){
@@ -136,7 +133,7 @@ public class SocialMediaController {
     /**
      * Sends the message id from parameter to get the message
      * @param message_id
-     * @return
+     * @return the message object
      */
     @GetMapping("/messages/{message_id}")
     public ResponseEntity<Message> getOneMessageByMessageIdHandler(@PathVariable int message_id){
@@ -148,7 +145,7 @@ public class SocialMediaController {
     /**
      * Sends account id from parameter to get a list of all messages with the account id
      * @param account_id
-     * @return
+     * @return a list of message objects
      */
     @GetMapping("/accounts/{account_id}")
     public ResponseEntity<List<Message>> getAllMessagesByUserIdHandler(@PathVariable int account_id){

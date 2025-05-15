@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.entity.Account;
+import com.example.exception.DuplicateUsernameException;
+import com.example.exception.RegistrationFailException;
 import com.example.repository.AccountRepository;
 import com.example.repository.MessageRepository;
 
@@ -27,11 +29,11 @@ public class AccountService {
      */
     public Account registerAccount(Account account){
         if (account.getUsername() == null || account.getUsername().isEmpty() || account.getPassword() == null || account.getPassword().length() < 4) {
-            return null;
+            throw new RegistrationFailException("Failed to register!");
         }
         Optional<Account> accountFind = accountRepository.findByUsername(account.getUsername());
         if (accountFind.isPresent()) {
-            return null;
+            throw new DuplicateUsernameException("Duplicate username found!");
         }
         Account persistedAccount = accountRepository.save(account);
         return persistedAccount;
