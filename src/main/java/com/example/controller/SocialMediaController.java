@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.example.service.AccountService;
 import com.example.service.MessageService;
@@ -24,13 +25,15 @@ import com.example.exception.RegistrationFailException;
 import java.util.List;
 import java.util.Optional;
 
+import javax.websocket.server.PathParam;
+
 /**
  * TODO: You will need to write your own endpoints and handlers for your controller using Spring. The endpoints you will need can be
  * found in readme.md as well as the test cases. You be required to use the @GET/POST/PUT/DELETE/etc Mapping annotations
  * where applicable as well as the @ResponseBody and @PathVariable annotations. You should
  * refer to prior mini-project labs and lecture materials for guidance on how a controller may be built.
  */
-@Controller
+@RestController
 public class SocialMediaController {
     private AccountService accountService;
     private MessageService messageService;
@@ -71,11 +74,12 @@ public class SocialMediaController {
     @PostMapping("/login")
     public ResponseEntity<Account> postLoginAccountHandler(@RequestBody Account account){
         Optional<Account> loggedAccount = accountService.loginAccount(account);
-        if (!loggedAccount.isEmpty()){
-            return ResponseEntity.status(200).body(account);
-        } else {
+        if (account.getUsername() == null || account.getUsername().isBlank() ||
+        account.getPassword() == null || account.getPassword().isBlank() || loggedAccount.isEmpty()) {
             return ResponseEntity.status(401).body(null);
-        }
+        } else {
+            return ResponseEntity.status(200).body(loggedAccount.get());
+        } 
     }
 
     /**
@@ -99,9 +103,13 @@ public class SocialMediaController {
      * @return number of rows deleted (0 or 1)
      */
     @DeleteMapping("/messages/{message_id}")
-    public ResponseEntity<Integer> deleteMessageByIdHandler(@RequestBody Message message){
-        int rowsDeleted = messageService.deleteMessageById(message.getMessageId());
-        return ResponseEntity.status(200).body(rowsDeleted);
+    public ResponseEntity<Integer> deleteMessageByIdHandler(@PathVariable int message_id){
+        int rowsDeleted = messageService.deleteMessageById(message_id);
+        if (rowsDeleted > 0){
+            return ResponseEntity.status(200).body(rowsDeleted);
+        } else {
+            return ResponseEntity.status(200).body(null);
+        }
     }
 
     /**
@@ -139,18 +147,16 @@ public class SocialMediaController {
     public ResponseEntity<Message> getOneMessageByMessageIdHandler(@PathVariable int message_id){
         Message message = messageService.getMessageById(message_id);
         return ResponseEntity.status(200).body(message);
-        
     }
 
     /**
      * Sends account id from parameter to get a list of all messages with the account id
-     * @param account_id
+     * @param accountId
      * @return a list of message objects
      */
-    @GetMapping("/accounts/{account_id}")
+    @GetMapping("/accounts/{account_id}/messages")
     public ResponseEntity<List<Message>> getAllMessagesByUserIdHandler(@PathVariable int account_id){
-        List<Message> messages = messageService.getAllMessagesByAccountId(account_id);
+        List<Message> messages = messageService.getAllMessagesByPostedBy(account_id);
         return ResponseEntity.status(200).body(messages);
-        
     }
 }

@@ -18,6 +18,7 @@ public class AccountService {
     /**
      * Constructor for the message repository interface
      */
+    @Autowired
     public AccountService(AccountRepository accountRepository){
         this.accountRepository = accountRepository;
     }

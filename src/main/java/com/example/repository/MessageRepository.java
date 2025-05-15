@@ -14,8 +14,8 @@ public interface MessageRepository extends JpaRepository<Message, Integer>{
     
     /**
      * Custom method definition for retrieving messages based on account id
-     * @param id
+     * @param postedBy
      * @return a list of message objects
      */
-    public List<Message> findAllByAccountId(int accountId);
+    public List<Message> findAllByPostedBy(Integer postedBy);
 }

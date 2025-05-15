@@ -1,5 +1,6 @@
 package com.example.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.entity.Message;
@@ -14,12 +15,14 @@ import java.util.Optional;
 @Service
 public class MessageService {
 
+    @Autowired
     private MessageRepository messageRepository;
 
     /**
      * Constructor for the message repository interface
      * @param messageRepository
      */
+    @Autowired
     public MessageService(MessageRepository messageRepository){
         this.messageRepository = messageRepository;
     }
@@ -31,7 +34,7 @@ public class MessageService {
      */
     public Message createMessage(Message message){
         if (message.getMessageText() == null || message.getMessageText().isBlank() || message.getMessageText().length() > 255 
-        || (message.getMessageId() != null && !messageRepository.existsById(message.getMessageId()))) {
+        || !messageRepository.existsById(message.getPostedBy())) {
             return null;
         }
         Message persistedMessage = messageRepository.save(message);
@@ -99,9 +102,9 @@ public class MessageService {
      * @param account_id
      * @return a list of message objects
      */
-    public List<Message> getAllMessagesByAccountId(int account_id){
+    public List<Message> getAllMessagesByPostedBy(int account_id){
         List<Message> messages = new ArrayList<>();
-        messages = messageRepository.findAllByAccountId(account_id);
+        messages = messageRepository.findAllByPostedBy(account_id);
         return messages;
     }
 }
