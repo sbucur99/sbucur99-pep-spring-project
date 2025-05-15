@@ -28,7 +28,6 @@ import java.util.List;
  * refer to prior mini-project labs and lecture materials for guidance on how a controller may be built.
  */
 @Controller
-//@RequestMapping("/")
 public class SocialMediaController {
     private AccountService accountService;
     private MessageService messageService;
@@ -38,6 +37,12 @@ public class SocialMediaController {
         this.messageService = messageService;
     }
 
+    /**
+     * Sends the account object without the id to the database for registration of a user
+     * @param account
+     * @return
+     * @throws SQLException
+     */
     @PostMapping("/register")
     public ResponseEntity<Account> postRegisterAccountHandler(@RequestBody Account account) throws SQLException{
         Account newAccount = accountService.registerAccount(account);
@@ -48,6 +53,12 @@ public class SocialMediaController {
         }
     }
 
+    /**
+     * Sends the account object without the id to login the user
+     * @param account
+     * @return
+     * @throws SQLException
+     */
     @PostMapping("/login")
     public ResponseEntity<Account> postLoginAccountHandler(@RequestBody Account account) throws SQLException{
         Account loggedAccount = accountService.loginAccount(account);
@@ -60,9 +71,6 @@ public class SocialMediaController {
 
     @DeleteMapping("/messages/{message_id}")
     public ResponseEntity<Message> postMessageHandler(@RequestBody Message message) throws SQLException{
-        if (message.getMessageText() == null || message.getMessageText().isEmpty() || message.getMessageText().length() > 255){
-            return ResponseEntity.status(400).body(null);
-        }
         Message newMessage = messageService.createMessage(message);
         if (newMessage != null){
             return ResponseEntity.status(200).body(newMessage);
@@ -72,7 +80,7 @@ public class SocialMediaController {
     }
 
     @PutMapping("/messages/{message_id}")
-    public ResponseEntity<Message> updateMessageHandler(@PathVariable int message_id, @RequestBody Message message) throws SQLException{
+    public ResponseEntity<Message> updateMessageByIdHandler(@PathVariable int message_id, @RequestBody Message message) throws SQLException{
         Message newMessage = messageService.updateMessage(message, message_id);
         if (newMessage != null){
             return ResponseEntity.status(200).body(newMessage);
